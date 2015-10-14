@@ -1,0 +1,8 @@
+# debugger interface
+type logtoold, domain;
+type logtoold_exec, exec_type, file_type;
+
+init_daemon_domain(logtoold)
+typeattribute logtoold mlstrustedsubject;
+
+read_logd(logtoold)

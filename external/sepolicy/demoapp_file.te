@@ -1,0 +1,2 @@
+# Additional demoapp_file rules
+allow demoapp_file labeledfs:filesystem { associate };

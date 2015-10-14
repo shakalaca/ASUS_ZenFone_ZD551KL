@@ -1,0 +1,9 @@
+# debugger interface
+type fdctool, domain;
+type fdctool_exec, exec_type, file_type;
+
+init_daemon_domain(fdctool)
+typeattribute fdctool mlstrustedsubject;
+#domain_auto_trans(init_shell, fdctool_exec, fdctool)
+# logd access
+read_logd(fdctool)

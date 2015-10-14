@@ -1,0 +1,23 @@
+#sensord - BST sensor daemon
+type sensord, domain;
+type sensord_exec, exec_type, file_type;
+# Started by init
+init_daemon_domain(sensord)
+# Change own perms to (nobody,nobody)
+allow sensord self:capability { setuid setgid };
+# Chown /data/misc/sensors/debug/ to nobody
+allow sensord self:capability chown;
+dontaudit sensord self:capability fsetid;
+# Access /data/system/sensors/settings
+allow sensord self:capability { fowner dac_override dac_read_search };
+allow sensord sysfs:file rw_file_perms;
+# Create directories and files under /data/misc/
+# and /data/system/. Allow generic r/w file access.
+allow sensord sensord_data_file:file create_file_perms;
+allow sensord sensord_data_file:dir create_dir_perms;
+allow sensord sensord_data_file:fifo_file create_file_perms;
+# Lunch /system/bin/sensord
+allow sensord sensord_exec:file { entrypoint rx_file_perms };
+# Access input nodes
+allow sensord input_device:dir { rw_dir_perms search };
+allow sensord input_device:chr_file { rw_file_perms };

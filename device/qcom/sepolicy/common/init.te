@@ -1,0 +1,22 @@
+# Adding allow rule for search on /fuse
+allow init fuse:dir search;
+allow init self:capability sys_module;
+allow init fuse:dir mounton;
+
+allow init fac_file:filesystem { relabelfrom relabelto mount associate};
+allow fac_file self:filesystem { relabelfrom relabelto mount associate};
+
+# tcpdump
+allow init fuse:dir { open read };
+allow init fuse:file { open read };
+
+###dump modem log
+allow init diag_exec:file execute_no_trans;
+allow init fuse:dir write;
+allow init fuse:dir add_name;
+allow init fuse:dir create;
+allow init fuse:dir remove_name;
+allow init fuse:file write;
+allow init fuse:file create;
+allow init fuse:file unlink;
+allow init fuse:file getattr;

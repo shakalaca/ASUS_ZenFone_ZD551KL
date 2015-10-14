@@ -1,0 +1,20 @@
+type subsystem_ramdump, domain;
+type subsystem_ramdump_exec, exec_type, file_type;
+init_daemon_domain(subsystem_ramdump);
+
+userdebug_or_eng(`
+  allow subsystem_ramdump ramdump_device:chr_file r_file_perms;
+  allow subsystem_ramdump sysfs:file w_file_perms;
+')
+
+#for modem crash log ramdump
+allow subsystem_ramdump device:dir { read open };
+allow subsystem_ramdump system_data_file:dir { write add_name create };
+allow subsystem_ramdump system_data_file:file { open read write create };
+allow subsystem_ramdump shell_exec:file { execute read open execute_no_trans };
+allow subsystem_ramdump zygote_exec:file { getattr execute read open execute_no_trans };
+allow subsystem_ramdump servicemanager:binder { call };
+allow subsystem_ramdump system_server:binder { call transfer };
+allow subsystem_ramdump system_file:file { execute_no_trans };
+# modem log dump for user image 
+allow subsystem_ramdump ramdump_device:chr_file { read open };

@@ -1,0 +1,31 @@
+#LogUploader fix Selinux packlog avc denied
+#allow system_app unlabeled:dir getattr;
+#allow system_app fac_file:dir getattr;
+#allow system_app persist_file:dir getattr;
+#For sh
+#allow init_shell zygote_exec:file execute_no_trans;
+
+#allow servicemanager rootfs:file execute_no_trans;
+#allow servicemanager system_data_file:file { open };
+#allow servicemanager init_shell:dir { search };
+#allow servicemanager init_shell:file { read open };
+#allow servicemanager init_shell:process { getattr };
+#allow system_server init_shell:binder { call };
+#allow system_app default_prop:property_service { set };
+#allow init_shell properties_device:file { execute };
+#allow system_server init_shell:fd { use };
+allow dumpstate shell_exec:file entrypoint;
+allow dumpstate media_rw_data_file:dir { write setattr getattr read remove_name open add_name search create rmdir };
+allow dumpstate property_socket:sock_file write;
+allow dumpstate system_data_file:file { rename create unlink write };
+allow dumpstate media_rw_data_file:file { append write getattr setattr read create unlink open rename };
+allow dumpstate sysfs_thermal:dir search;
+allow dumpstate unlabeled:dir { search read open write getattr remove_name add_name };
+allow dumpstate properties_device:file execute;
+allow dumpstate init:unix_stream_socket connectto;
+allow dumpstate sysfs_thermal:lnk_file read;
+allow dumpstate system_app_data_file:dir search;
+allow dumpstate ctl_default_prop:property_service set;
+allow dumpstate sysfs_thermal:file { getattr read open };
+allow dumpstate system_app_data_file:file { getattr read open };
+allow dumpstate unlabeled:file { getattr read rename open unlink };
