@@ -15,3 +15,6 @@ allow wpa ims:unix_dgram_socket sendto;
 allow wpa system_data_file:file open;
 
 allow wpa diag_device:chr_file { read write open ioctl };
+
+#permission for /proc/asusevtlog
+allow wpa proc_evtlog:file { read write open };

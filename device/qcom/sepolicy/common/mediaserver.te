@@ -74,3 +74,12 @@ allow mediaserver firmware_file:file { read open getattr };
 allow mediaserver default_prop:property_service set;
 
 allow mediaserver proc_evtlog:file {open write};
+
+#sean_lu +++ laser for shipping image calibration
+allow mediaserver proc_driver_LaserFocus_on:file { open read write getattr };
+allow mediaserver proc_driver_LaserFocus_value:file { open read getattr };
+allow mediaserver proc_driver_LaserFocus_value_more_info:file { open read getattr };
+allow mediaserver proc_driver_LaserFocus_CalStart:file { open read write getattr };
+allow mediaserver proc_driver_LaserFocus_Status:file { open read getattr };
+allow mediaserver proc_driver_LaserFocus_Status_For_Camera:file { open read getattr };
+#sean_lu +++ laser

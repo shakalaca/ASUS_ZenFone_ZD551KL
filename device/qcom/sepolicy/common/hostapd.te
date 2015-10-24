@@ -6,3 +6,6 @@ userdebug_or_eng(`
 
 allow hostapd netd:unix_dgram_socket sendto;
 allow hostapd wpa_socket:sock_file write;
+
+#pesmission for /proc/asusevtlog
+allow hostapd proc_evtlog:file { read write open };

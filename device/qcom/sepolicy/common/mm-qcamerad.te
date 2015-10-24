@@ -49,3 +49,13 @@ allow mm-qcamerad shell_data_file:dir search;
 
 # IMS use camera daemon to make VT call
 allow mm-qcamerad port:tcp_socket name_bind;
+
+
+#sean_lu +++ laser for shipping image calibration
+allow mm-qcamerad proc_driver_LaserFocus_on:file { read write open getattr };
+allow mm-qcamerad proc_driver_LaserFocus_value:file { read open getattr };
+allow mm-qcamerad proc_driver_LaserFocus_value_more_info:file { read open getattr };
+allow mm-qcamerad proc_driver_LaserFocus_CalStart:file { read write open getattr };
+allow mm-qcamerad proc_driver_LaserFocus_Status:file { open read getattr };
+allow mm-qcamerad proc_driver_LaserFocus_Status_For_Camera:file { open read getattr };
+#sean_lu +++ laser

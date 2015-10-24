@@ -394,6 +394,10 @@ static void mdss_dsi_panel_bklt_dcs(struct mdss_dsi_ctrl_pdata *ctrl, int level)
 			PANEL_DBG("disable backlight enable gpio\n");
 			ASUSEvtlog("[Display]disable backlight\n");
 			gpio_set_value((ctrl->bklt_en_gpio), 0);
+			if(asus_lcd_id[0]=='4'){
+				//pr_err("[Jeffery] delay 90ms\n");
+				mdelay(140);
+			}
 		}
 		bkl_off = 1;
 	}else{

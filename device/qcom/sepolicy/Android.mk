@@ -100,7 +100,8 @@ BOARD_SEPOLICY_UNION := \
        recovery.te \
        WifiTest_Agent.te \
        modem_country.te \
-       demoapp_file.te
+       demoapp_file.te \
+       asus_debug.te
 
 # Compile sensor pilicy only for SSC targets
 SSC_TARGET_LIST := apq8084

@@ -29,3 +29,6 @@ r_dir_file(rild, netmgrd)
 allow rild diag_device:chr_file { read write open};
 # modem log dump for user image 
 allow rild diag_device:chr_file { ioctl };
+
+# For AsusEvtlog
+allow rild proc_evtlog:file rw_file_perms;

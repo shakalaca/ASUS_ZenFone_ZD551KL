@@ -127,6 +127,7 @@
 #define QPNP_VM_BMS_DEV_NAME		"qcom,qpnp-vm-bms"
 
 static int boot_completed = 0;
+extern bool g_Charger_mode;
 extern void smb358_update_aicl_work(int);
 bool thermal_abnormal = false;
 /* indicates the state of BMS */
@@ -1656,6 +1657,7 @@ int g_mapping_state = 0;
 extern bool smb358_get_full_status(void);
 extern bool smb358_is_charging(int usb_state);
 extern int get_charger_type(void);
+extern void smb358_polling_battery_data_work(int time);
 static int mapping_for_full_status(int last_soc)
 {
 	static int result;
@@ -1665,6 +1667,13 @@ static int mapping_for_full_status(int last_soc)
 	static bool once = false;	
 	int old_shift = cur_shift;
 	int old_state = g_mapping_state;
+	int batt_voltage;
+	static bool batLow;
+	int rc;
+
+	rc=get_battery_voltage(the_chip,&batt_voltage);
+	if(rc)
+		pr_err("error get battery voltage when do mapping\n");
 
 	switch (g_mapping_state) {
 		case BMS_NORMAL:
@@ -1754,6 +1763,23 @@ static int mapping_for_full_status(int last_soc)
 		result = 100;
 	}
 	repot_full_status(result);
+	//add by bsp kerwin_chen 
+	if((result == 0)&&(batt_voltage >3400000)){
+		result=1;
+		BAT_DBG("%s: cap = %d but voltage = %d, keep cap 1!\n", __FUNCTION__, result, batt_voltage);
+		}
+	if (!batLow) {
+		if (result == 0) {
+			ASUSEvtlog("[BAT] Low Voltage\n");
+			printk("[BAT] Low Voltage\n");
+			smb358_polling_battery_data_work(0);
+			batLow = true;
+			 }
+	} else{
+		if (result != 0) {
+			batLow = false;
+			}
+		}
 	return result;
 }
 
@@ -1895,7 +1921,7 @@ static int report_vm_bms_soc(struct qpnp_bms_chip *chip)
 			check_recharge_condition(chip);
 	}
 
-	printk("last_soc=%d calculated_soc=%d soc=%d time_since_last_change=%d\n",
+	pr_debug("last_soc=%d calculated_soc=%d soc=%d time_since_last_change=%d\n",
 			chip->last_soc, chip->calculated_soc,
 			soc, time_since_last_change_sec);
 
@@ -1925,7 +1951,7 @@ static int report_state_of_charge(struct qpnp_bms_chip *chip)
 	else
 		soc = report_vm_bms_soc(chip);
         //BSP Ben 0% shutdown mechanism
-        if(soc < 1 && boot_completed==0)
+        if(soc < 1 && boot_completed==0 && (!g_Charger_mode))
         {
                 soc = 1;
                 printk("boot_completed no yet, don't report batt level = 0\n");
@@ -2218,7 +2244,10 @@ static void monitor_soc_work(struct work_struct *work)
 			} else if (chip->last_soc != chip->calculated_soc) {
 				pr_debug("update bms_psy\n");
 				power_supply_changed(&chip->bms_psy);
-			} else {
+			} else if(chip->last_soc==0){
+				pr_debug("update bms_psy\n");
+				power_supply_changed(&chip->bms_psy);
+			}else {
 				report_vm_bms_soc(chip);
 			}
 		}
@@ -2944,6 +2973,7 @@ numbers are addible
 */
 #define	reboot_or_not		1
 #define	reboot_no_cable		1
+#define	reboot_rtc		4
 #define	chgm_by_ac			16
 #define	reboot_with_cable	17
 #define 	pwr_on_no_cable		128
@@ -2967,7 +2997,8 @@ static void compare_and_choose(struct qpnp_bms_chip *chip,int ocv, int soc,int t
 		chip->calculated_soc = soc;
 		return;
 	}
-	else if(reg==reboot_no_cable || reg==pwr_on_no_cable || reg==reboot_smpl){
+	else if(reg==reboot_no_cable || reg==pwr_on_no_cable || reg==reboot_smpl ||
+                reg==reboot_rtc){
 		printk("hw ocv is better\n");
 		return;
 	}

@@ -82,4 +82,4 @@ allow system_server asusfrp_block_device:blk_file rw_file_perms;
 allow system_server location:binder { call transfer };
 
 # Add for ASUS GPS event log(send msg to /proc/asusevtlog and then write to /asdf/ASUSEvtlog.txt)
-allow system_server proc_evtlog:file {open write};
+allow system_server proc_evtlog:file rw_file_perms;
