@@ -6,7 +6,7 @@ How to build zenfone kernel
 	repo sync -c
 
 #2 remove some folder
-	rm -rf kernel external/sepolicy/  device/qcom/sepolicy/ 
+	rm -rf kernel 
 
 #3 extract kernel source code to working dir
 	tar -zxvf [kernel-source].tar.gz

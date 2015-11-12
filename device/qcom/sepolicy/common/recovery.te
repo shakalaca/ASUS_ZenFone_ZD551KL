@@ -1,4 +1,0 @@
-  # Allow recovery to access rfs system file
-  allow recovery rfs_system_file:dir { create_file_perms relabelfrom relabelto };
-  allow recovery rfs_system_file:{ file lnk_file } { create_file_perms relabelfrom relabelto };
-

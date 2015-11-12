@@ -275,6 +275,15 @@
 	};
 	// ASUS_BSP --- srHuang HALL sensor
 
+// <asus-ben20151028+>
+        Project_ID_Pin {
+		compatible = "qcom,Project_ID_Pin";
+		pinctrl-names = "Project_ID_Pin_active","Project_ID_Pin_suspend";
+		pinctrl-0 = <&Project_ID_Pin_active>;
+		pinctrl-1 = <&Project_ID_Pin_suspend>;
+	};
+// <asus-ben20151028->
+
 	sound {
 		compatible = "qcom,msm8x16-audio-codec";
 		qcom,model = "msm8939-snd-card-mtp";
@@ -308,7 +317,10 @@
 		pinctrl-1 = <&cdc_pdm_lines_sus>;
 		pinctrl-2 = <&cross_conn_det_act>;
 		pinctrl-3 = <&cross_conn_det_sus>;
-		qcom,cdc-us-euro-gpios = <&msm_gpio 120 0>;
+		//ASUS_BSP +++ JefferyHsu
+		//disable OMTP headset support
+		//qcom,cdc-us-euro-gpios = <&msm_gpio 120 0>;  
+		//ASUS_BSP --- JefferyHsu
 		asoc-platform = <&pcm0>, <&pcm1>, <&voip>, <&voice>,
 				<&loopback>, <&compress>, <&hostless>,
 				<&afe>, <&lsm>, <&routing>, <&lpa>;

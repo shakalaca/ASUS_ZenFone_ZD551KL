@@ -1670,6 +1670,7 @@ static int mapping_for_full_status(int last_soc)
 	int batt_voltage;
 	static bool batLow;
 	int rc;
+	static bool reported_flag;
 
 	rc=get_battery_voltage(the_chip,&batt_voltage);
 	if(rc)
@@ -1767,17 +1768,29 @@ static int mapping_for_full_status(int last_soc)
 	if((result == 0)&&(batt_voltage >3400000)){
 		result=1;
 		BAT_DBG("%s: cap = %d but voltage = %d, keep cap 1!\n", __FUNCTION__, result, batt_voltage);
-		}
+	}
 	if (!batLow) {
 		if (result == 0) {
 			ASUSEvtlog("[BAT] Low Voltage\n");
 			printk("[BAT] Low Voltage\n");
-			smb358_polling_battery_data_work(0);
+			//power_supply_changed(&the_chip->bms_psy);
 			batLow = true;
 			 }
 	} else{
 		if (result != 0) {
 			batLow = false;
+			reported_flag=0;
+			}
+		}
+
+	if((result==0)&&(reported_flag==0))
+		{
+		if (the_chip->batt_psy == NULL)
+			the_chip->batt_psy = power_supply_get_by_name("battery");
+		if(the_chip->batt_psy != NULL){
+			BAT_DBG("update bms_psy cap=0\n");
+			power_supply_changed(the_chip->batt_psy);
+			reported_flag=1;
 			}
 		}
 	return result;
@@ -3649,11 +3662,19 @@ extern int64_t battID;
 static int set_battery_data(struct qpnp_bms_chip *chip)
 {
 	int64_t battery_id;
-	int rc = 0;
+	int rc = 0,i=0;
 	struct bms_battery_data *batt_data;
 	struct device_node *node;
 
-	battery_id = read_battery_id(chip);
+	for(i = 0; i < 3; i++) {
+		battery_id = read_battery_id(chip);
+		if (battery_id >= 200000 && battery_id <= 1500000) {
+			break;
+		}else{
+		BAT_DBG("%s: wrong id, debounce with count = %d!\n", __func__, i);
+		}
+		mdelay(20);
+	}
 	if (battery_id < 0) {
 		pr_err("cannot read battery id err = %lld\n", battery_id);
 		return battery_id;
@@ -4046,9 +4067,9 @@ static int boot_completed_proc_open(struct inode *inode, struct  file *file)
 static ssize_t boot_completed_proc_write(struct file *filp, const char __user *buff,
 		size_t len, loff_t *data)
 {
-	int val;
+	int val = 0;
 
-	char messages[256];
+	char messages[256] = { '\0' };
 
 	if (len > 256) {
 		len = 256;
@@ -4061,7 +4082,7 @@ static ssize_t boot_completed_proc_write(struct file *filp, const char __user *b
 	val = (int)simple_strtol(messages, NULL, 10);
 
 	printk("[BAT][Proc][Prop]boot_completed_prop: %d\n", val);
-        if(val ==1 ){
+        if(val){
 	        printk("[BAT][Proc][Prop]set boot_completed to 1 \n");
                 boot_completed = 1;
 	        if (the_chip->bms_psy_registered)

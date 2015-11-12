@@ -73,7 +73,7 @@ static bool newold = 0 ; //20140523 Eve_Wen default = 0 means cm36283
 static int proximity_state = 1; //<asus-wx20150429+>
 static int proximity_int_away = 0; //<asus-wx20150506+>
 static int cm36283_probe_fail = 0; //<asus-wx20150805+>
-
+static int cm36283_is_no_present= 0;
 //<-- ASUS-Bevis_Chen + -->
 
 bool enLSensorConfig_flag =0 ;
@@ -86,6 +86,7 @@ struct proc_dir_entry *lpsensor_entry = NULL;
 struct proc_dir_entry *lightsensor_entry = NULL;
 struct proc_dir_entry *proximitysensor_entry = NULL;
  //<ASUS-annacheng20150129+><<<<<+
+ extern bool proximityap3426_check_status(void);
 //<++++++ward_du+++++++>
 static int lpsensor_proc_show(struct seq_file *m, void *v) {
 	if(!lpsensor_entry)
@@ -738,10 +739,15 @@ static void proximity_initial_value_work_routine(struct work_struct *work){
 
 bool proximity_check_status(void){
     struct CM36283_info *lpi;
-	uint16_t ps_adc_value_init, data, data1;
+	uint16_t ps_adc_value_init = 0 , data =0, data1= 0;
     int ret = 0;
 	int p_value; //<asus-wx20150814+>
 
+	pr_err("anna proximity_check_status default \n");
+	if (cm36283_is_no_present) {
+		pr_err("[PS][ap3426]  is ap3426\n"); 
+		return proximityap3426_check_status();		
+	}   				
 //<asus-wx20150805>+>>
 	if (cm36283_probe_fail) {
 		pr_err("proximity_check_status default return FAR\n");
@@ -2622,6 +2628,7 @@ static int CM36283_probe (struct i2c_client *client,
     	status = i2c_smbus_read_word_data(client, ID_REG);
 	if (status < 0) {
 		pr_err("[PS_ERR][CM36283 error]%s: CM36283 is not present!\n", __func__);
+		cm36283_is_no_present=1;
 		ret = -ENODEV;
 		goto err_platform_data_null;
 	}

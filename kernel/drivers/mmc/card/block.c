@@ -3272,7 +3272,7 @@ static const struct mmc_fixup blk_fixups[] =
 		  MMC_QUIRK_SEC_ERASE_TRIM_BROKEN),
 	MMC_FIXUP(CID_NAME_ANY, CID_MANFID_HYNIX, CID_OEMID_ANY, add_quirk_mmc,
 		  MMC_QUIRK_BROKEN_DATA_TIMEOUT),
-	MMC_FIXUP(CID_NAME_ANY, CID_MANFID_MICRON, CID_OEMID_ANY, add_quirk_mmc,
+	MMC_FIXUP(CID_NAME_ANY, CID_MANFID_ANY, CID_OEMID_ANY, add_quirk_mmc,
                   MMC_QUIRK_SEC_ERASE_TRIM_BROKEN),
 
 	/* Some INAND MCP devices advertise incorrect timeout values */

@@ -1,7 +1,0 @@
-type modem_country, domain;
-type modem_country_exec, exec_type, file_type;
-
-init_daemon_domain(modem_country)
-
-#modem_country needs read/write on smd device node
-allow modem_country smd_device:chr_file rw_file_perms;

@@ -1518,12 +1518,13 @@ void SET_VCH_VALUE(struct work_struct *dat){
 extern bool g_Charger_mode;
 extern bool g_bat_full;
 extern int get_bms_calculated_soc(int *rsoc);
+static bool charger_mode_cable_out = false;
 void LED_ChargerMode_Set(struct work_struct *dat){
 	int ret = 0;
 	int cap;
 	static uint8_t OldLedType = 0xFF;
 
-       if(!g_Charger_mode)
+        if(!g_Charger_mode)
 		return;
 	
 	if(Batt_ID_reday){
@@ -1550,12 +1551,16 @@ void LED_ChargerMode_Set(struct work_struct *dat){
 						led_type = 1;
 				}
 			}
+                if(charger_mode_cable_out)
+                {
+                        printk("Charger mode Cable Out! set LED off\n");
+                        led_type = 0;
+                }
 		if(OldLedType != led_type)
-			led_set_charger_mode(led_type);	
-		OldLedType = led_type;
+		        led_set_charger_mode(led_type);
+                OldLedType = led_type;
 	}else
 		schedule_delayed_work(&LED_ChargerMode, 1*HZ);
-		
 }
 //--0623 charger mode led--
 
@@ -2334,6 +2339,10 @@ static bool asus_battery_charging_limit(void)
 static int __smb358_path_suspend(struct smb358_charger *chip,bool suspend)
 {
 	int rc;
+
+	rc= smb358_enable_volatile_writes(smb358_dev);
+	if (rc < 0)
+		return rc;
 
 	rc=smb358_masked_write(chip,CMD_A_REG,CMD_A_CHG_SUSP_EN_MASK,suspend ? CMD_A_CHG_SUSP_EN_BIT : 0);
 
@@ -3374,7 +3383,7 @@ static int smb358_soc_detect_batt_tempr_5wBZsku_zd550(int usb_state)
 
 	/*set charger current limit by kerwin*/
 	if(g_usb_state == AC_IN ){
-	    ret = Thermal_Policy(&thermal_policy_ic);
+	    ret = Thermal_Policy_ze550(&thermal_policy_ic);
 		if(ret < 0){
 			BAT_DBG_E(" %s: fail to set current according to Thermal Policy\n", __FUNCTION__);
 		}
@@ -3711,8 +3720,8 @@ static int Thermal_Policy(int *thermal_policy_current){
                                  //smb358_update_aicl_work(5);
                                  //wake_lock_timeout(&inok_wakelock, 5 * HZ);
                          } else if (Thermal_Level == 1){
-                                 BAT_DBG("Thermal_Level = %d, set Iusb_in current = 1200mA\n", Thermal_Level);
-								 *thermal_policy_current=CFG_CURRENT_LIMIT_SMB358_VALUE_1200;
+                                 BAT_DBG("Thermal_Level = %d, set Iusb_in current = 1000mA\n", Thermal_Level);
+								 *thermal_policy_current=CFG_CURRENT_LIMIT_SMB358_VALUE_1000;
                          } else if (Thermal_Level == 2){
                                  ret = get_bms_calculated_soc(&cap);
                                  if (ret < 0) {
@@ -3839,7 +3848,7 @@ void aicl_dete_worker(struct work_struct *dat)
 		/*if AICL result <= 500, then config input current but don't do JEITA*/
 		if(asus_PRJ_ID==ASUS_ZD550KL||asus_PRJ_ID==ASUS_ZE600KL){
 			BAT_DBG("%s: ZD550KL & ZE600KL flow\n", __FUNCTION__);
-                        if (aicl_result <= 500) {
+                  	if (aicl_result <= 500 && Thermal_Level < 2) {
 			        BAT_DBG("%s: don't do JEITA when aicl result(%dmA) <= 500mA.\n", __FUNCTION__, aicl_result);
 			        smb358_config_max_current(usb_state);
 				goto skip_jeita;
@@ -4145,6 +4154,12 @@ int setSMB358Charger(int usb_state)
 	}
 	if (smb358_dev) {
 		power_supply_changed(&smb358_power_supplies[0]);
+		//under 02h[7]=0,  prevent cable_plug & reboot when suspend adapter
+		ret=__smb358_path_suspend(smb358_dev,0);
+		if (ret){
+                BAT_DBG_E("%s: Set adapter to normal mode fail!\n",__FUNCTION__);
+			//	return -1;
+                }
 	}
 	switch (usb_state) {
 	case AC_IN:
@@ -4152,6 +4167,9 @@ int setSMB358Charger(int usb_state)
 			if(!wake_lock_active(&UsbCable_Lock))
 				wake_lock(&UsbCable_Lock);
 			if(asus_PRJ_ID == ASUS_ZD550KL) {
+				focal_usb_detection(true);
+			}
+			if(asus_PRJ_ID == ASUS_ZE600KL) {
 				focal_usb_detection(true);
 			}
 			if(asus_PRJ_ID==ASUS_ZE550KL){
@@ -4198,6 +4216,10 @@ int setSMB358Charger(int usb_state)
 			if(usb_state==USB_IN)
 				focal_usb_detection(true);
 		}
+		if(asus_PRJ_ID == ASUS_ZE600KL) {
+			if(usb_state==USB_IN)
+				focal_usb_detection(true);
+		}
 		if(asus_PRJ_ID==ASUS_ZE550KL){
 			if(usb_state==USB_IN)
 				focal_usb_detection(true);
@@ -4228,6 +4250,9 @@ int setSMB358Charger(int usb_state)
 			if(asus_PRJ_ID == ASUS_ZD550KL) {
 				focal_usb_detection(false);
 			}
+			if(asus_PRJ_ID == ASUS_ZE600KL) {
+				focal_usb_detection(false);
+			}
 			if(asus_PRJ_ID==ASUS_ZE550KL){
 				schedule_delayed_work(&AC_unstable_det, 0);
 				focal_usb_detection(false);
@@ -4241,6 +4266,8 @@ int setSMB358Charger(int usb_state)
 				}
 			}
 			JEITA_Flag=false;
+                        //set LED off in charger mode
+                        charger_mode_cable_out = true;
 			schedule_delayed_work(&LED_ChargerMode, 0*HZ);
 		}
 		break;
@@ -4807,6 +4834,12 @@ static int smb358_charger_probe(struct i2c_client *client,
 	/*BSP david: do JEITA if the usb state has changed*/
 	if (smb358_is_charging(usb_state)) {
 		mutex_lock(&g_usb_state_lock);
+		//under 02h[7]=0,  prevent cable_plug & reboot when suspend adapter
+		ret=__smb358_path_suspend(smb358_dev,0);
+		if (ret){
+                BAT_DBG_E("%s: Set adapter to normal mode fail!\n",__FUNCTION__);
+				return -1;
+        }
 		smb358_config_max_current(g_usb_state);
 		mutex_unlock(&g_usb_state_lock);
 		if (usb_state == AC_IN) {
