@@ -220,7 +220,7 @@ static int ncp6335d_set_voltage(struct regulator_dev *rdev,
 	set_val = DIV_ROUND_UP(min_uV - dd->min_voltage, dd->step_size);
 	if (!strncmp("3.0",buf,3)) {
 		//printk("OLIVER 3.0 found\n");
-	} else if (MSM_CPU_8939 == cur_cpu){
+	} else if ((MSM_CPU_8939 == cur_cpu)&&(asus_PRJ_ID == ASUS_ZE550KL)){
 		if (!strncmp("3",asus_project_stage,2)||!strncmp("1",asus_project_stage,2)) {
 			if (set_val < 80)
 				set_val = set_val + 5;

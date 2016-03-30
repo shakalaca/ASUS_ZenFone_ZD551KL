@@ -85,7 +85,7 @@ static unsigned char CTPM_FW_ZE600KL_CPT_TPK[] = {
 	#include "ASUS_ZE600KL_5446_0x52_0x25_20150709_app.cfg"
 };
 static unsigned char CTPM_FW_ZE600KL_CPT_JTOUCH[] = {
-	#include "ASUS_ZE600KL_5446_0x82_0x28_20150825_app.cfg"
+	#include "ASUS_ZE600KL_5446_0x82_0x44_20151021_app.cfg"
 };
 static unsigned char CTPM_FW_ZE600KL_IVO_TPK[] = {
 	#include "ASUS_ZE600KL_5446_0x57_0x04_20150525_app.cfg"
@@ -96,16 +96,16 @@ static unsigned char CTPM_FW_ZE600KL_IVO_JTOUCH[] = {
 #endif
 #ifdef ZE601KL_FHD
 static unsigned char CTPM_FW_ZE601KL_TPK[] = {
-	#include "ASUS_ZE601KL_5446_0x53_0x2B_20150825_app.cfg"
+	#include "ASUS_ZE601KL_5446_0x53_0x47_20151021_app.cfg"
 };
 static unsigned char CTPM_FW_ZE601KL_JTOUCH[] = {
-	#include "ASUS_ZE601KL_5446_0x83_0x2A_20150825_app.cfg"
+	#include "ASUS_ZE601KL_5446_0x83_0x47_20151021_app.cfg"
 };
 static unsigned char CTPM_FW_ZE601KL_TM_TPK[] = {
-	#include "ASUS_ZE601KL_5446_0x51_0x2C_20150825_app.cfg"
+	#include "ASUS_ZE601KL_5446_0x51_0x48_20151021_app.cfg"
 };
 static unsigned char CTPM_FW_ZE601KL_TM_JTOUCH[] = {
-	#include "ASUS_ZE601KL_5446_0x81_0x2B_20150825_app.cfg"
+	#include "ASUS_ZE601KL_5446_0x81_0x48_20151021_app.cfg"
 };
 
 #endif

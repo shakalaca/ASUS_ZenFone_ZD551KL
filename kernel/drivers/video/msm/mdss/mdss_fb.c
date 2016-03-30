@@ -1346,10 +1346,6 @@ static int mdss_fb_blank_sub(int blank_mode, struct fb_info *info,
 					mdss_fb_stop_disp_thread(mfd);
 
 				mdss_fb_set_backlight(mfd, 0);
-				if ( (asus_lcd_id[0]=='2') && (asus_lcd_id[0]=='3') ){
-					printk("[DISP] %s Backlight Disabled\n",__func__);
-					gpio_set_value((ctrl_pdata->bklt_en_gpio), 0);
-				}
 				mfd->bl_updated = 0;
 			}
 			mfd->panel_power_state = req_power_state;

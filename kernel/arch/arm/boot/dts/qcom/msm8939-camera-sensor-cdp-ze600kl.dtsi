@@ -51,13 +51,26 @@
 			"FLASH_NOW";
 		qcom,cci-master = <0>;
 	};
-	//<asus-Hollie20140410+>
+	//<ASUS Kun 20151225+>
 	ois0: qcom,ois@29 {
+                cell-index = <0>;
+                reg = <0x29>;
+                qcom,slave-id = <0x52 0x0000 0xb4>;
+                compatible = "qcom,ois";
+                label = "vl6180";
+                qcom,cci-master = <0>;
+                cam_vaf-supply = <&pm8916_l10>;
+                qcom,cam-vreg-name = "cam_vaf";
+                qcom,cam-vreg-min-voltage = <2800000>;
+                qcom,cam-vreg-max-voltage = <2800000>;
+                qcom,cam-vreg-op-mode = <80000>;
+        };	
+	ois1: qcom,ois@4C {
 		cell-index = <0>;
-		reg = <0x29>;
-		qcom,slave-id = <0x52 0x0000 0xb4>;
-		compatible = "qcom,ois";
-		label = "vl6180";
+		reg = <0x4C>;
+		qcom,slave-id = <0x98 0x0328 0x01AD>;
+		compatible = "qcom,ois1";
+		label = "tof";
 		qcom,cci-master = <0>;
 		cam_vaf-supply = <&pm8916_l10>;
 		qcom,cam-vreg-name = "cam_vaf";
@@ -65,7 +78,7 @@
 		qcom,cam-vreg-max-voltage = <2800000>;
 		qcom,cam-vreg-op-mode = <80000>;
 	};
-	//<asus-Hollie20140410->
+	//<ASUS Kun 20151225>
 /*
 	eeprom0: qcom,eeprom@20 {
 		cell-index = <0>;
