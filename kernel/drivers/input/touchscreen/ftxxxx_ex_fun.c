@@ -67,7 +67,7 @@ static unsigned char CTPM_FW_ZX550KL[] = {
 };
 //asus_jeffery_hsu+++
 static unsigned char CTPM_FW_ZD550KL_GIS_TM[] = {
-	#include "ASUS_ZD551KL_5446_0x61_0xB8_20151020_app.i"
+	#include "ASUS_ZD551KL_5446_0x61_0xBA_20160318_app.i"
 };
 static unsigned char CTPM_FW_ZD550KL_GIS_AUO[] = {
 	#include "ASUS_ZD551KL_5446_0x63_0xB9_20151028_app.i"
