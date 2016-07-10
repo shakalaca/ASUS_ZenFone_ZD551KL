@@ -670,8 +670,8 @@ static void pp_iface_stat_header(struct seq_file *m)
 		 "rx_other_bytes rx_other_packets "
 		 "tx_tcp_bytes tx_tcp_packets "
 		 "tx_udp_bytes tx_udp_packets "
-		 "tx_other_bytes tx_other_packets"
-                 "rx_dns_bytes rx_dns_packets"
+		 "tx_other_bytes tx_other_packets "
+                 "rx_dns_bytes rx_dns_packets "
                  "tx_dns_bytes tx_dns_packets\n"
 	);
 }
@@ -1106,9 +1106,11 @@ static int ipx_proto(const struct sk_buff *skb,
 	}
 	return tproto;
 }
+
 static void
 data_counters_update_dns(struct data_counters *dc, int set,
-                enum ifs_tx_rx direction, int proto, int bytes){
+                enum ifs_tx_rx direction, int proto, int bytes)
+{
         dc_add_byte_packets(dc, set, direction, IFS_DNS, bytes, 1);
 }
 

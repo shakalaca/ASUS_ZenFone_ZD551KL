@@ -90,6 +90,8 @@ struct proc_dir_entry *lightsensor_entry = NULL;
 struct proc_dir_entry *proximitysensor_entry = NULL;
  //<ASUS-annacheng20150129+><<<<<+
  extern bool proximityap3426_check_status(void);
+ extern void ftxxxx_disable_touch(bool flag);
+ extern int get_audiomode(void);
 //<++++++ward_du+++++++>
 static int lpsensor_proc_show(struct seq_file *m, void *v) {
 	if(!lpsensor_entry)
@@ -3278,8 +3280,23 @@ static int control_and_report( struct CM36283_info *lpi, uint8_t mode, uint16_t 
 
 	  	//pr_err("[PS][CM36283]ZXTEST proximity %s, val=%d\n", val ? "FAR" : "NEAR", val);	
         input_report_abs(lpi->ps_input_dev, ABS_DISTANCE, val);
+		
         input_sync(lpi->ps_input_dev);
 		proximity_state = val; //<asus-wx20150506+>
+//<anna-cheng>for proximity near close touch in call
+	if(val == 0){
+		if (2 == get_audiomode()) {
+			ftxxxx_disable_touch(true);
+			//pr_err("[PS][CM36283] proximity --anna close  in call \n");
+		}else{
+			ftxxxx_disable_touch(false);
+			//pr_err("[PS][CM36283] proximity --anna close not  in call \n");
+		}	
+	}else{
+		ftxxxx_disable_touch(false);
+		//pr_err("[PS][CM36283] proximity --anna far far awayl \n");
+	}
+//<anna-cheng>for proximity near close touch in call		
    }
  }
 

@@ -2,7 +2,7 @@ How to build zenfone kernel
 
 #1 download qcom open source code
 	cd [working dir]
-	repo init -u git://codeaurora.org/platform/manifest -b release -m LA.BR.1.1.3.c1-01500-8x16.0.xml
+	repo init -u git://codeaurora.org/platform/manifest -b release -m LA.BR.1.2.6-01010-8x16.0.xml
 	repo sync -c
 
 #2 remove some folder

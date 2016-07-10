@@ -69,6 +69,7 @@ obj-$(CONFIG_MTD)		+= mtd/
 obj-$(CONFIG_SPI)		+= spi/
 obj-$(CONFIG_SPMI)		+= spmi/
 obj-$(CONFIG_SLIMBUS)		+= slimbus/
+obj-$(CONFIG_SOUNDWIRE)     += soundwire/
 obj-y				+= hsi/
 obj-y				+= net/
 obj-$(CONFIG_ATM)		+= atm/
@@ -168,3 +169,12 @@ obj-$(CONFIG_ESOC)		+= esoc/
 obj-$(CONFIG_BIF)		+= bif/
 obj-$(CONFIG_SENSORS)		+= sensors/
 obj-$(CONFIG_SENSORS_SSC)	+= sensors/
+# ASUS-danielchan20150603 ASUS_SENSOR_ENG_CMD >>>>>>>>>+
+ifeq ($(TARGET_BUILD_VARIANT), userdebug)
+KBUILD_CFLAGS += -DCONFIG_ASUS_SENSOR_ENG_CMD
+endif
+
+ifeq ($(TARGET_BUILD_VARIANT), eng)
+KBUILD_CFLAGS += -DCONFIG_ASUS_SENSOR_ENG_CMD
+endif
+# ASUS-danielchan20150603 ASUS_SENSOR_ENG_CMD <<<<<<<<<<+

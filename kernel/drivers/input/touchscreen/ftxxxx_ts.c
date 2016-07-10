@@ -194,6 +194,11 @@ static int IICErrorCountor = 0;
 /*#define FTXXXX_INT_PIN	62//EXYNOS4_GPJ0(3) //S5PV210_GPB(2)*/
 #define FTXXXX_INT_PIN_NAME	"ft5x46-int"
 
+//<asus-Jeffery20151202+>
+extern bool keyboard_enable;
+struct point_first_location first_location[CFG_MAX_TOUCH_POINTS];
+//<asus-Jeffery20151202->
+
 extern bool proximity_check_status(void);
 
 /*
@@ -341,18 +346,18 @@ static ssize_t focalTP_virtual_keys_register(struct kobject *kobj, struct kobj_a
 		//<asus-Jeffery20150323+>
 		case ASUS_ZE600KL:
 			#ifdef ZE600KL_HD
-			virtual_keys = 	__stringify(EV_KEY) ":" __stringify(FT5x06_KEY_BACK) ":130:1330:160:104" "\n" \
+			virtual_keys = 	__stringify(EV_KEY) ":" __stringify(FT5x06_KEY_BACK) ":160:1330:148:72" "\n" \
 
-						__stringify(EV_KEY) ":" __stringify(FT5x06_KEY_HOME) ":360:1330:170:104" "\n" \
+						__stringify(EV_KEY) ":" __stringify(FT5x06_KEY_HOME) ":360:1330:172:72" "\n" \
 
-						__stringify(EV_KEY) ":" __stringify(FT5x06_KEY_MENU)   ":590:1330:160:104" "\n" ;			
+						__stringify(EV_KEY) ":" __stringify(FT5x06_KEY_MENU)   ":560:1330:148:72" "\n" ;			
 			#endif
 			#ifdef ZE601KL_FHD
-			virtual_keys= 	__stringify(EV_KEY) ":" __stringify(FT5x06_KEY_BACK) ":215:2045:260:250" "\n" \
+			virtual_keys= 	__stringify(EV_KEY) ":" __stringify(FT5x06_KEY_BACK) ":240:1995:222:108" "\n" \
 
-						__stringify(EV_KEY) ":" __stringify(FT5x06_KEY_HOME) ":540:2045:260:250" "\n" \
+						__stringify(EV_KEY) ":" __stringify(FT5x06_KEY_HOME) ":540:1995:258:108" "\n" \
 
-						__stringify(EV_KEY) ":" __stringify(FT5x06_KEY_MENU)   ":865:2045:260:250" "\n" ;
+						__stringify(EV_KEY) ":" __stringify(FT5x06_KEY_MENU)   ":840:1995:222:108" "\n" ;
 			#endif
 			break;
 		//<asus-Jeffery20150323->
@@ -780,15 +785,112 @@ static int ftxxxx_read_Touchdata(struct ftxxxx_ts_data *data)
 /*
 *report the point information
 */
+
+static int ASUS_check_point_position(u16 x, u16 y){
+
+	int limit_y =0;
+
+#ifdef ZE601KL_FHD
+	limit_y = 1920;
+#endif
+#ifdef ZE600KL_HD
+	limit_y = 1280;
+#endif
+	if((limit_y != 0) && y > limit_y){
+#ifdef ZE600KL_HD		
+		if( x < 86 || (234 <x && x < 274) || (446 < x && x < 486) || x > 634)
+			return 1;
+#endif
+#ifdef ZE601KL_FHD
+		if( x < 129 || (351 < x && x < 411) || (669 < x && x < 729) || x > 951)
+			return 1;
+#endif
+
+
+if(asus_PRJ_ID == ASUS_ZE550KL){	
+
+#ifdef ZE551KL_FHD
+              limit_y = 1280;
+		if( x < 85 || (345 < x && x < 410) || (670 < x && x < 735) || x > 995)
+					return 1;
+#endif
+#ifdef ZE550KL_HD
+					  limit_y = 1280;
+				if( x < 50 || (230 < x && x < 275) || (445 < x && x < 490) || x > 670)
+							return 1;
+#endif
+}
+
+		return 0;
+	}else
+		return 0;
+
+	return 0;
+}
+
 static void ftxxxx_report_value(struct ftxxxx_ts_data *data)
 {	
 	struct ts_event *event = &data->event;
 	int i;
 	int uppoint = 0;
 	static u8 last_touchpoint; 
-	
+	bool report_point=true;
+	u8 filter_touch_point=0;
+	int limit_report=0;
 	/*protocol B*/
+if(asus_PRJ_ID == ASUS_ZE600KL){	
+#ifdef ZE601KL_FHD
+	limit_report = 23;
+#endif
+#ifdef ZE600KL_HD
+	limit_report = 13;
+#endif
+
+
+}
+if(asus_PRJ_ID == ASUS_ZE550KL){	
+
+#ifdef ZE550KL_HD
+		limit_report = 13;
+#endif
+#ifdef ZE551KL_FHD
+			limit_report = 13;
+#endif
+}
+
+	filter_touch_point = event->touch_point;
 	for (i = 0; i < event->touch_point; i++) {
+		report_point=true;
+
+			if(asus_PRJ_ID == ASUS_ZE600KL||asus_PRJ_ID == ASUS_ZE550KL){
+				if(ASUS_check_point_position(event->au16_x[i],event->au16_y[i])){
+							report_point=false;
+							filter_touch_point--;
+				}
+				
+				if(!keyboard_enable && report_point){
+					if( //if the point is in non-reported area at the first touch.( HD: x < 13 or x > 720-13, FHD: x<23 or x > 1080-23).
+						(first_location[event->au8_finger_id[i]].x < limit_report) ||
+						(first_location[event->au8_finger_id[i]].x > (ftxxxx_ts->x_max - limit_report))
+						){
+						if(//if the point is in the reported area, report the point and set the flag to true.
+							(event->au8_touch_event[i] == 2) && (limit_report <= event->au16_x[i] && (event->au16_x[i]<= (ftxxxx_ts->x_max-limit_report))))
+							{
+							report_point=true;
+							first_location[event->au8_finger_id[i]].filter_flag = true;
+						}else{ // if the point is in non-reported area and if the flag to false, skeep the point.
+							if(!first_location[event->au8_finger_id[i]].filter_flag){
+								report_point=false; 
+								filter_touch_point--;
+							}
+						}
+					}
+				}
+			}
+	
+		if(!report_point)
+			continue;
+		
 		input_mt_slot(data->input_dev,event->au8_finger_id[i]);
 		if (event->au8_touch_event[i]== 0 || event->au8_touch_event[i] == 2) {
 			input_mt_report_slot_state(data->input_dev,MT_TOOL_FINGER,true);
@@ -824,7 +926,7 @@ static void ftxxxx_report_value(struct ftxxxx_ts_data *data)
 		}
 		last_touchpoint=0;
 	}
-	if(event->touch_point == uppoint) {
+	if(filter_touch_point == uppoint) {
 		input_report_key(data->input_dev, BTN_TOUCH, 0);
 		//touch_down_up_status = 0;
 		/* +++ asus jacob add for print touch location +++ */
@@ -848,7 +950,7 @@ static irqreturn_t ftxxxx_ts_interrupt(int irq, void *dev_id)
 {
 /*	struct ftxxxx_ts_data *ftxxxx_ts = dev_id; ASUS jacob use globle ftxxxx_ts data*/
 	int ret = 0;
-	
+	int i=0;
 #ifdef FTS_GESTRUE/*zax 20140922*/
 	u8 state;
 #endif
@@ -857,7 +959,8 @@ static irqreturn_t ftxxxx_ts_interrupt(int irq, void *dev_id)
 		printk(KERN_WARNING "[Focal][Touch] in selftest mode\n");
 		return IRQ_HANDLED;
 	}
-	if (suspend_resume_process == true) {
+	//if (suspend_resume_process == true) { //anna -for disable touch
+	if ((suspend_resume_process == true) | (disable_tp_flag == true)) {
 		printk("[Focal][Touch] interrupt suspend_resume in process skip !\n");
 		return IRQ_HANDLED;
 	}
@@ -880,8 +983,18 @@ static irqreturn_t ftxxxx_ts_interrupt(int irq, void *dev_id)
 							/*continue;*/
 						} else {
 #endif
-			ret = ftxxxx_read_Touchdata(ftxxxx_ts);
-
+			ret = ftxxxx_read_Touchdata(ftxxxx_ts);	
+			//<asus-Jeffery20151202+>
+			if(asus_PRJ_ID == ASUS_ZE600KL||asus_PRJ_ID == ASUS_ZE550KL){
+				for (i = 0; i < ftxxxx_ts->event.touch_point; i++) {
+					if(ftxxxx_ts->event.au8_touch_event[i] == 0){
+					//pr_err("[Jeffery][Touch] event=0 x=%x, y=%x\n",ftxxxx_ts->event.au16_x[i],ftxxxx_ts->event.au16_y[i]);
+						first_location[ftxxxx_ts->event.au8_finger_id[i]].x=ftxxxx_ts->event.au16_x[i];
+						first_location[ftxxxx_ts->event.au8_finger_id[i]].filter_flag = false;
+					}
+				}
+			}
+			//<asus-Jeffery20151202->
 			if ((ret == 0)&&(suspend_resume_process==false)&&(!disable_tp_flag))
 				ftxxxx_report_value(ftxxxx_ts);
 #ifdef FTS_GESTRUE/*zax 20140922*/
@@ -1863,6 +1976,23 @@ static void update_fw_in_wq(struct work_struct *work)
 	fts_ctpm_auto_upgrade(ftxxxx_ts->client);
 }
 /***********add byjinpeng_He for update firmware in workqueue begin****************/
+
+
+
+/* +++ anna  add for proximity trigger disable touch +++ */
+void ftxxxx_disable_touch(bool flag)
+{
+	if (flag) {
+		disable_tp_flag = true;
+		printk("[Focal][Touch] %s: proximity trigger disable touch !\n", __func__);
+	} else {
+		disable_tp_flag = false;
+		printk("[Focal][Touch] %s: proximity trigger enable touch  !\n", __func__);
+	}
+}
+EXPORT_SYMBOL(ftxxxx_disable_touch);
+
+/* --- anna add for proximity trigger disable touch --- */
 
 /*****add by jinpeng_he for touch disable or enable from execute /proc/asus_touch_proximity_status ++++******/
 struct proc_dir_entry *touchsensor_entry = NULL;
